@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build binaries
+        env:
+          VERSION_TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${VERSION_TAG#v}"
+          LDFLAGS="-X main.version=${VERSION}"
+          GOOS=darwin GOARCH=arm64 go build -ldflags "$LDFLAGS" -o storeready-darwin-arm64 ./cmd/storeready
+          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o storeready-darwin-amd64 ./cmd/storeready
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o storeready-linux-amd64 ./cmd/storeready
+
+      - name: Package tarballs
+        run: |
+          for bin in storeready-darwin-arm64 storeready-darwin-amd64 storeready-linux-amd64; do
+            cp "$bin" storeready
+            tar czf "${bin}.tar.gz" storeready
+            rm storeready
+          done
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            storeready-darwin-arm64.tar.gz \
+            storeready-darwin-amd64.tar.gz \
+            storeready-linux-amd64.tar.gz
+
+      - name: Compute SHA256 checksums
+        id: sha
+        run: |
+          echo "darwin_arm64=$(sha256sum storeready-darwin-arm64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "darwin_amd64=$(sha256sum storeready-darwin-amd64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_amd64=$(sha256sum storeready-linux-amd64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Homebrew tap
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION_TAG: ${{ github.ref_name }}
+          DARWIN_ARM64_SHA: ${{ steps.sha.outputs.darwin_arm64 }}
+          DARWIN_AMD64_SHA: ${{ steps.sha.outputs.darwin_amd64 }}
+          LINUX_AMD64_SHA: ${{ steps.sha.outputs.linux_amd64 }}
+        run: |
+          VERSION="${VERSION_TAG#v}"
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${TAP_TOKEN}" \
+            https://api.github.com/repos/MaTriXy/homebrew-tap/dispatches \
+            -d "{
+              \"event_type\": \"update-formula\",
+              \"client_payload\": {
+                \"formula\": \"storeready\",
+                \"version\": \"${VERSION}\",
+                \"darwin_arm64_sha256\": \"${DARWIN_ARM64_SHA}\",
+                \"darwin_amd64_sha256\": \"${DARWIN_AMD64_SHA}\",
+                \"linux_amd64_sha256\": \"${LINUX_AMD64_SHA}\"
+              }
+            }"
