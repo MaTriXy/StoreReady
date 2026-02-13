@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "name": "storeready",
+  "description": "Pre-submission compliance scanner for Apple App Store and Google Play",
+  "organization": {
+    "name": "MaTriXy",
+    "url": "https://github.com/MaTriXy"
+  },
+  "references": [
+    "https://developer.apple.com/app-store/review/guidelines/",
+    "https://developer.apple.com/design/human-interface-guidelines/",
+    "https://developer.apple.com/documentation/storekit",
+    "https://developer.apple.com/documentation/apptrackingtransparency",
+    "https://developer.apple.com/documentation/localauthentication",
+    "https://developer.apple.com/documentation/networkextension/nevpnmanager",
+    "https://developer.apple.com/help/app-store-connect/",
+    "https://developer.android.com/distribute/play-policies",
+    "https://developer.android.com/google/play/requirements/target-sdk",
+    "https://support.google.com/googleplay/android-developer/answer/16810878"
+  ],
+  "keywords": [
+    "apple", "app-store", "review", "guidelines", "ios", "swift",
+    "react-native", "expo", "compliance", "rejection", "preflight",
+    "google-play", "android", "play-policy"
+  ]
+}

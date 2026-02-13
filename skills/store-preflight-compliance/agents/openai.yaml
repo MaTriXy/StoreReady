@@ -1,0 +1,4 @@
+interface:
+  display_name: "Store Preflight Compliance"
+  short_description: "Apple + Google Play pre-submission compliance review"
+  default_prompt: "Use $store-preflight-compliance to review this repo for Apple App Store and Google Play submission readiness, then return findings by severity with fixes."

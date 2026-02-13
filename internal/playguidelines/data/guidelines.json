@@ -1,0 +1,177 @@
+{
+  "guidelines": [
+    {
+      "section": "GP-1",
+      "title": "Developer Program Policy Baseline",
+      "content": "All Play apps must comply with the Google Play Developer Program Policies, including app content, user safety, and deceptive behavior rules.",
+      "verification": "manual",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/16810878?hl=mt_ALL&rd=1&visit_id=639030868864019202-3498152732",
+        "https://developer.android.com/distribute/play-policies"
+      ],
+      "manual_checks": [
+        "Confirm no restricted or prohibited content is present.",
+        "Confirm app behavior and listing are not deceptive or misleading.",
+        "Confirm policy-specific declarations are complete in Play Console."
+      ],
+      "subsections": [
+        {
+          "section": "GP-1.1",
+          "title": "Restricted Content",
+          "content": "Content categories such as illegal activity, sexual content, hate, violence, and regulated goods require strict policy compliance.",
+          "verification": "manual",
+          "sources": [
+            "https://support.google.com/googleplay/android-developer/answer/9878810"
+          ],
+          "manual_checks": [
+            "Review in-app content and user-generated surfaces for restricted categories.",
+            "Document moderation or blocking controls where applicable."
+          ]
+        },
+        {
+          "section": "GP-1.2",
+          "title": "Deceptive Behavior",
+          "content": "Apps must not misrepresent identity, functionality, or intent and must not use manipulative behavior.",
+          "verification": "manual",
+          "sources": [
+            "https://support.google.com/googleplay/android-developer/answer/9888077"
+          ],
+          "manual_checks": [
+            "Verify branding, screenshots, and description match actual app behavior.",
+            "Verify no impersonation or misleading claims."
+          ]
+        }
+      ]
+    },
+    {
+      "section": "GP-2",
+      "title": "Sensitive Permissions and APIs",
+      "content": "High-risk permissions require clear user benefit and policy declarations. Access must be limited to core functionality.",
+      "verification": "hybrid",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/16558241",
+        "https://support.google.com/googleplay/android-developer/answer/9888170"
+      ],
+      "automated_checks": [
+        "high-risk-permission:*"
+      ],
+      "manual_checks": [
+        "Confirm each sensitive permission is core to app functionality.",
+        "Complete corresponding Play Console permission declarations."
+      ]
+    },
+    {
+      "section": "GP-3",
+      "title": "Target API Level Requirements",
+      "content": "Apps must target the required Android API level to remain discoverable and eligible for updates on Google Play.",
+      "verification": "automated",
+      "sources": [
+        "https://developer.android.com/google/play/requirements/target-sdk"
+      ],
+      "automated_checks": [
+        "target-sdk-missing",
+        "target-sdk-outdated"
+      ]
+    },
+    {
+      "section": "GP-4",
+      "title": "Release Configuration Integrity",
+      "content": "Release artifacts should not expose debug flags or placeholder package IDs, and should include release versioning metadata.",
+      "verification": "automated",
+      "sources": [
+        "https://developer.android.com/studio/publish/preparing"
+      ],
+      "automated_checks": [
+        "manifest-missing",
+        "debuggable-true",
+        "placeholder-application-id",
+        "appid-missing",
+        "versioncode-missing"
+      ]
+    },
+    {
+      "section": "GP-5",
+      "title": "Security and Network Hardening",
+      "content": "Apps should avoid cleartext traffic and insecure backup defaults unless there is an explicit and documented requirement.",
+      "verification": "hybrid",
+      "sources": [
+        "https://developer.android.com/privacy-and-security/security-best-practices",
+        "https://support.google.com/googleplay/android-developer/answer/9888379"
+      ],
+      "automated_checks": [
+        "cleartext-true",
+        "allow-backup-true"
+      ],
+      "manual_checks": [
+        "Confirm release signing and key management policies are in place.",
+        "Confirm Play Integrity or equivalent anti-abuse controls for high-risk apps."
+      ]
+    },
+    {
+      "section": "GP-6",
+      "title": "Data Safety and Privacy Disclosures",
+      "content": "Play listing disclosures and in-app privacy details must accurately represent collection, sharing, retention, and security practices.",
+      "verification": "manual",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/10787469"
+      ],
+      "manual_checks": [
+        "Validate Data safety form answers against actual runtime behavior and SDK data flows.",
+        "Ensure privacy policy URL is live and reflects current app behavior."
+      ]
+    },
+    {
+      "section": "GP-7",
+      "title": "User Account Deletion",
+      "content": "Apps that support account creation must provide account deletion paths and proper data handling after deletion.",
+      "verification": "manual",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/13327111"
+      ],
+      "manual_checks": [
+        "Confirm in-app account deletion is available and functional.",
+        "Confirm deletion behavior and retention timing are documented."
+      ]
+    },
+    {
+      "section": "GP-8",
+      "title": "Store Listing and Metadata Accuracy",
+      "content": "Store listing text, screenshots, and claims must accurately represent app functionality and not include prohibited claims.",
+      "verification": "manual",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/1078870"
+      ],
+      "manual_checks": [
+        "Verify screenshots and feature graphics reflect current app UI.",
+        "Verify no ranking claims, misleading superlatives, or prohibited metadata."
+      ]
+    },
+    {
+      "section": "GP-9",
+      "title": "Monetization and Payments",
+      "content": "Digital goods and subscriptions must follow Play billing requirements and policy restrictions.",
+      "verification": "manual",
+      "sources": [
+        "https://support.google.com/googleplay/android-developer/answer/9858738"
+      ],
+      "manual_checks": [
+        "Confirm in-app digital purchases use Google Play Billing where required.",
+        "Confirm subscription disclosures and cancellation paths are compliant."
+      ]
+    },
+    {
+      "section": "GP-10",
+      "title": "App Quality and Device Compatibility",
+      "content": "Apps should meet Android quality, stability, accessibility, and device compatibility expectations prior to release.",
+      "verification": "manual",
+      "sources": [
+        "https://developer.android.com/quality",
+        "https://play.google.com/console/about/policystatus"
+      ],
+      "manual_checks": [
+        "Review crash and ANR health prior to rollout.",
+        "Review compatibility and pre-launch test reports."
+      ]
+    }
+  ]
+}
