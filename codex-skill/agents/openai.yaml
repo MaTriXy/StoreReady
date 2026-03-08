@@ -1,0 +1,4 @@
+interface:
+  display_name: "Store Preflight Compliance"
+  short_description: "Google Play + Apple App Store pre-submission compliance checkup"
+  default_prompt: "Use $store-preflight-compliance to run StoreReady Google Play + Apple checks, fix compliance issues, and rerun until READY."

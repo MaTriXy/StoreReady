@@ -1,0 +1,32 @@
+{
+  "name": "storeready",
+  "title": "StoreReady — Mobile App Store Pre-Submission Checkup",
+  "description": "Pre-submission checkup for mobile apps on Apple App Store and Google Play. Scans code patterns, privacy manifests, IPA binaries, and store metadata — catches rejection risks before you submit.",
+  "author": "MaTriXy",
+  "version": "0.1.0",
+  "category": "compliance",
+  "icon": "shield-check",
+  "install": {
+    "plugin": "storeready@storeready"
+  },
+  "triggers": [
+    "app store review",
+    "app store rejection",
+    "app store compliance",
+    "app store guidelines",
+    "submit to app store",
+    "ios submission",
+    "google play",
+    "play store",
+    "android submission",
+    "play store compliance",
+    "play store guidelines",
+    "app review preparation",
+    "preflight check",
+    "pre-submission scan",
+    "storeready",
+    "privacy manifest",
+    "app store ready",
+    "mobile app compliance"
+  ]
+}

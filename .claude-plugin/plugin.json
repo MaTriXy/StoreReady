@@ -1,0 +1,29 @@
+{
+  "name": "storeready",
+  "owner": {
+    "name": "MaTriXy"
+  },
+  "plugins": [
+    {
+      "name": "storeready",
+      "source": "../",
+      "category": "compliance",
+      "tags": [
+        "apple",
+        "app-store",
+        "google-play",
+        "android",
+        "review",
+        "guidelines",
+        "ios",
+        "swift",
+        "kotlin",
+        "react-native",
+        "expo",
+        "rejection",
+        "compliance"
+      ],
+      "strict": true
+    }
+  ]
+}
