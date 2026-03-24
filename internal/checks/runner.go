@@ -43,6 +43,9 @@ func (r *Runner) registerChecks() {
 	r.register(TierMetadata, "Build processed", checkBuildProcessed)
 	r.register(TierMetadata, "Age rating declared", checkAgeRating)
 	r.register(TierMetadata, "Encryption compliance", checkEncryption)
+	r.register(TierMetadata, "Content rights declaration", checkContentRightsDeclaration)
+	r.register(TierMetadata, "Privacy policy URL", checkAppInfoPrivacyPolicyURL)
+	r.register(TierMetadata, "Copyright metadata", checkCopyright)
 	r.register(TierMetadata, "Territory availability", checkTerritoryAvailability)
 	r.register(TierMetadata, "Pricing consistency", checkPricingConsistency)
 
