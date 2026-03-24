@@ -41,6 +41,8 @@ That's it. You get store-specific findings fast, with automated checks and manua
 ## Store Coverage
 
 - **Apple App Store**: local preflight checks (`preflight` / `appstore-checkup`), built-in Apple guideline browser (`guidelines`), and App Store Connect API checks (`scan`).
+- **Apple App Store**: local preflight checks (`preflight` / `appstore-checkup`), built-in Apple guideline browser (`guidelines`), App Store Connect API checks (`scan`), and end-to-end ASC release lane (`publish`).
+- **Apple App Store**: local preflight checks (`preflight` / `appstore-checkup`), built-in Apple guideline browser (`guidelines`), App Store Connect API checks (`scan`), structured manual release gates (`release-checklist`), and end-to-end ASC release lane (`publish`).
 - **Google Play**: local project checks (`playstore-checkup`) and built-in Play policy matrix/checklists (`play-guidelines`).
 
 ## Commands
@@ -159,7 +161,46 @@ API-based checks against your app in App Store Connect:
 - Screenshot verification for required device sizes
 - Build processing status
 - Age rating and encryption compliance
+- Content rights declaration
+- App-info privacy policy URL coverage by locale
+- Version copyright metadata presence
 - Content analysis (platform references, placeholders)
+
+### `storeready release-checklist` — Manual ASC/App Review release gates
+
+```bash
+storeready release-checklist
+storeready release-checklist --app-type subscription
+storeready release-checklist --format json --output release-checklist.json
+```
+
+Outputs a structured list of **non-fully-automatable** checks to review before submit:
+- Submission state, review notes, backend readiness, metadata truthfulness
+- Policy-sensitive flows (account deletion, IAP/restore, SIWA parity, legal links)
+- App-type specific gates (`subscription`, `social`, `kids`, `health`, `games`, `macos`, `ai`, `crypto`, `vpn`)
+
+### `storeready publish` — End-to-end StoreReady gate + ASC release lane
+
+```bash
+# Safe default: runs local + ASC gates, then asc release dry-run
+storeready publish \
+  --app-id 6758967212 \
+  --version 1.2.3 \
+  --build 123456789
+
+# Real run (submits through asc release flow after gates pass)
+storeready publish \
+  --app-id 6758967212 \
+  --version 1.2.3 \
+  --build 123456789 \
+  --metadata-dir ./metadata/version/1.2.3 \
+  --confirm
+```
+
+Behavior:
+- Runs local StoreReady preflight checks (unless `--skip-local-checks`)
+- Runs StoreReady ASC metadata gates via `scan` engine (unless `--skip-asc-scan`)
+- Executes `asc release run` (dry-run by default; real run with `--confirm`)
 
 ### `storeready guidelines` — Browse Apple App Store guidelines
 
@@ -243,6 +284,10 @@ StoreReady
 │   ├── Tier 2        Content analysis
 │   ├── Tier 3        Binary inspection
 │   └── Tier 4        Historical pattern matching
+│
+├── release-checklist Structured manual ASC/App Review gate list
+│
+├── publish           End-to-end local+ASC gate and ASC CLI release lane
 │
 ├── auth              App Store Connect authentication
 │   ├── login         Apple ID + 2FA session auth

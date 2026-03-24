@@ -81,6 +81,8 @@ storeready codescan .
 storeready privacy .
 storeready ipa /path/to/build.ipa
 storeready scan --app-id <ID>
+storeready release-checklist --app-type all
+storeready publish --app-id <ID> --version <X.Y.Z> [--build <BUILD_ID>] [--confirm]
 storeready guidelines search "privacy"
 storeready play-guidelines list
 ```
