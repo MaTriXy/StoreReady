@@ -29,6 +29,9 @@ Get started:
   storeready play-guidelines list  Browse Google Play policy matrix
   storeready preflight . --ipa X   Apple preflight with IPA binary analysis
   storeready scan --app-id ID      Apple App Store Connect metadata (needs API key)
+  storeready release-checklist     Manual ASC/App Review gate checklist
+  storeready publish --app-id ID --version X.Y.Z
+                                   End-to-end gate + ASC release lane
   storeready guidelines search     Browse Apple's review guidelines`,
 		purple.Sprint("storeready — know before you submit.")),
 }

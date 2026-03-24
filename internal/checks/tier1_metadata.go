@@ -338,15 +338,103 @@ func checkEncryption(ctx context.Context, client *asc.Client, appID string, find
 	return nil
 }
 
+// checkContentRightsDeclaration verifies the app has a content rights declaration set.
+func checkContentRightsDeclaration(ctx context.Context, client *asc.Client, appID string, findings *[]Finding) error {
+	app, err := client.GetApp(appID)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(app.Attributes.ContentRightsDeclaration) == "" {
+		*findings = append(*findings, Finding{
+			Tier:      TierMetadata,
+			Severity:  SeverityBlock,
+			Guideline: "2.3",
+			Title:     "Content rights declaration is missing",
+			Detail:    "App Store submission requires a content rights declaration before review can proceed.",
+			Fix:       "Set content rights in App Store Connect (DOES_NOT_USE_THIRD_PARTY_CONTENT or USES_THIRD_PARTY_CONTENT).",
+		})
+	}
+
+	return nil
+}
+
+// checkAppInfoPrivacyPolicyURL verifies privacy policy URLs are set on app-info localizations.
+func checkAppInfoPrivacyPolicyURL(ctx context.Context, client *asc.Client, appID string, findings *[]Finding) error {
+	infos, err := client.GetAppInfos(appID)
+	if err != nil {
+		return err
+	}
+	if len(infos) == 0 {
+		return nil
+	}
+
+	for _, info := range infos {
+		localizations, err := client.GetAppInfoLocalizations(info.ID)
+		if err != nil {
+			return err
+		}
+		if len(localizations) == 0 {
+			*findings = append(*findings, Finding{
+				Tier:      TierMetadata,
+				Severity:  SeverityBlock,
+				Guideline: "5.1.1",
+				Title:     "No app-info localizations found",
+				Detail:    "Privacy policy URL is validated on app-info localizations, but no app-info localizations were returned.",
+				Fix:       "Create app-info localizations and set a privacy policy URL per locale in App Store Connect.",
+			})
+			continue
+		}
+
+		for _, loc := range localizations {
+			if strings.TrimSpace(loc.Attributes.PrivacyPolicyURL) != "" {
+				continue
+			}
+			*findings = append(*findings, Finding{
+				Tier:      TierMetadata,
+				Severity:  SeverityBlock,
+				Guideline: "5.1.1",
+				Title:     fmt.Sprintf("[%s] Privacy policy URL is missing", loc.Attributes.Locale),
+				Detail:    "Privacy policy URL is required in app-info localization settings for submission readiness.",
+				Fix:       "Set Privacy Policy URL under App Store Connect → App Information → Localizations.",
+			})
+		}
+	}
+
+	return nil
+}
+
+// checkCopyright verifies the current version has copyright metadata.
+func checkCopyright(ctx context.Context, client *asc.Client, appID string, findings *[]Finding) error {
+	versions, err := client.GetAppStoreVersions(appID)
+	if err != nil || len(versions) == 0 {
+		return err
+	}
+
+	latest := versions[0]
+	if strings.TrimSpace(latest.Attributes.Copyright) == "" {
+		*findings = append(*findings, Finding{
+			Tier:      TierMetadata,
+			Severity:  SeverityWarn,
+			Guideline: "2.3",
+			Title:     fmt.Sprintf("Version %s copyright is empty", latest.Attributes.VersionString),
+			Detail:    "Copyright metadata is commonly required during final submission checks.",
+			Fix:       "Set copyright on the current App Store version in App Store Connect.",
+		})
+	}
+
+	return nil
+}
+
 // Required screenshot dimensions for each display type.
 var requiredScreenshotDimensions = map[string]struct {
 	name   string
 	width  int
 	height int
 }{
-	"APP_IPHONE_67":  {"iPhone 6.7\"", 1290, 2796},
-	"APP_IPHONE_65":  {"iPhone 6.5\"", 1284, 2778},
-	"APP_IPHONE_55":  {"iPhone 5.5\"", 1242, 2208},
+	"APP_IPHONE_67":         {"iPhone 6.7\"", 1290, 2796},
+	"APP_IPHONE_65":         {"iPhone 6.5\"", 1284, 2778},
+	"APP_IPHONE_55":         {"iPhone 5.5\"", 1242, 2208},
 	"APP_IPAD_PRO_3GEN_129": {"iPad Pro 12.9\"", 2048, 2732},
 	"APP_IPAD_PRO_129":      {"iPad Pro 12.9\" (2nd gen)", 2048, 2732},
 }
@@ -447,19 +535,19 @@ func checkTerritoryAvailability(ctx context.Context, client *asc.Client, appID s
 
 	if len(territories) == 0 {
 		*findings = append(*findings, Finding{
-			Tier:      TierMetadata,
-			Severity:  SeverityBlock,
-			Title:     "App not available in any territory",
-			Detail:    "The app has no territory availability configured.",
-			Fix:       "Set territory availability in App Store Connect → Pricing and Availability.",
+			Tier:     TierMetadata,
+			Severity: SeverityBlock,
+			Title:    "App not available in any territory",
+			Detail:   "The app has no territory availability configured.",
+			Fix:      "Set territory availability in App Store Connect → Pricing and Availability.",
 		})
 	} else if len(territories) < 5 {
 		*findings = append(*findings, Finding{
-			Tier:      TierMetadata,
-			Severity:  SeverityInfo,
-			Title:     fmt.Sprintf("App available in only %d territories", len(territories)),
-			Detail:    "Your app is available in very few territories. Consider expanding for wider reach.",
-			Fix:       "Review territory availability in App Store Connect → Pricing and Availability.",
+			Tier:     TierMetadata,
+			Severity: SeverityInfo,
+			Title:    fmt.Sprintf("App available in only %d territories", len(territories)),
+			Detail:   "Your app is available in very few territories. Consider expanding for wider reach.",
+			Fix:      "Review territory availability in App Store Connect → Pricing and Availability.",
 		})
 	}
 
@@ -477,11 +565,11 @@ func checkPricingConsistency(ctx context.Context, client *asc.Client, appID stri
 
 	if len(prices) == 0 {
 		*findings = append(*findings, Finding{
-			Tier:      TierMetadata,
-			Severity:  SeverityWarn,
-			Title:     "No price schedule configured",
-			Detail:    "No pricing information found. Ensure your app's price (including Free) is explicitly set.",
-			Fix:       "Set pricing in App Store Connect → Pricing and Availability.",
+			Tier:     TierMetadata,
+			Severity: SeverityWarn,
+			Title:    "No price schedule configured",
+			Detail:   "No pricing information found. Ensure your app's price (including Free) is explicitly set.",
+			Fix:      "Set pricing in App Store Connect → Pricing and Availability.",
 		})
 	}
 

@@ -89,5 +89,7 @@ storeready codescan .                      # Code-only scan
 storeready privacy .                       # Privacy manifest scan
 storeready ipa /path/to/build.ipa          # Binary inspection
 storeready scan --app-id <ID>              # App Store Connect checks (needs auth)
+storeready release-checklist --app-type all
+storeready publish --app-id <ID> --version <X.Y.Z> [--build <BUILD_ID>] [--confirm]
 storeready guidelines search "privacy"     # Search Apple guidelines
 ```
