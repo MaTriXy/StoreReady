@@ -40,6 +40,33 @@ All commands support:
 --output file.json  # write to file instead of stdout
 ```
 
+## New Apple Release Commands
+
+### `release-checklist` — Manual/hybrid App Store release gates
+
+```bash
+storeready release-checklist
+storeready release-checklist --app-type subscription
+storeready release-checklist --format json --output release-checklist.json
+```
+
+Use this before submit to verify non-fully-automatable requirements (review notes, account deletion, IAP/restore, SIWA parity, legal links, app-type specific policies).
+
+### `publish` — StoreReady-gated ASC CLI release lane
+
+```bash
+# Dry-run by default
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID>
+
+# Real submit
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID> --confirm
+```
+
+Pipeline:
+1. Run local preflight checks (can skip with `--skip-local-checks`)
+2. Run ASC metadata scan checks (can skip with `--skip-asc-scan`)
+3. Execute `asc release run` (dry-run unless `--confirm`)
+
 ## Architecture
 
 ```
@@ -58,6 +85,8 @@ storeready
 ├── ipa                   Binary-only inspection
 │
 ├── scan                  App Store Connect API checks (tiers 1–4)
+├── release-checklist     Manual/hybrid App Store release gate list
+├── publish               StoreReady-gated ASC release lane
 ├── auth                  App Store Connect authentication
 ├── guidelines            Apple guideline browser
 ├── play-guidelines       Google Play policy browser

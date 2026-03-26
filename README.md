@@ -41,6 +41,8 @@ cd StoreReady && make build
 ```bash
 storeready playstore-checkup .       # Google Play
 storeready appstore-checkup .        # Apple App Store
+storeready release-checklist         # Manual Apple release gates
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID>  # ASC dry-run lane
 ```
 
 Findings are sorted by severity:
@@ -61,6 +63,7 @@ Findings are sorted by severity:
 | **Privacy** | — | PrivacyInfo.xcprivacy, Required Reason APIs |
 | **Binary** | — | IPA inspection: icons, size, launch storyboard, ATS |
 | **Store API** | — | App Store Connect: metadata, screenshots, builds |
+| **Release lane** | — | `release-checklist` + `publish` (ASC CLI gated flow) |
 | **Guidelines** | Built-in Play policy matrix | Built-in Apple Review Guidelines |
 | **Policy checklist** | Automated + manual review items | Automated + manual review items |
 
@@ -74,6 +77,19 @@ Findings are sorted by severity:
 ```
 
 All commands support `--format json` and `--output <file>` for pipeline integration.
+
+## Apple End-to-End Lane
+
+```bash
+# 1) Manual/hybrid policy gates not fully automatable
+storeready release-checklist --app-type all
+
+# 2) Automated local + ASC gates, then ASC release dry-run
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID>
+
+# 3) Real submit after review
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID> --confirm
+```
 
 ## AI Integrations
 
@@ -93,4 +109,4 @@ Then invoke with `$store-preflight-compliance` in either tool.
 
 ---
 
-[Google Play](docs/google-play.md) &nbsp;&bull;&nbsp; [Apple App Store](docs/apple-app-store.md) &nbsp;&bull;&nbsp; [All Commands](docs/commands.md) &nbsp;&bull;&nbsp; [License (MPL-2.0)](LICENSE)
+[Google Play](docs/google-play.md) &nbsp;&bull;&nbsp; [Apple App Store](docs/apple-app-store.md) &nbsp;&bull;&nbsp; [All Commands](docs/commands.md) &nbsp;&bull;&nbsp; [Release Notes](RELEASE_NOTES.md) &nbsp;&bull;&nbsp; [License (MPL-2.0)](LICENSE)
