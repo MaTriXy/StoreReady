@@ -57,10 +57,38 @@ storeready scan --app-id 6758967212
 
 | Tier | Checks |
 |------|--------|
-| 1 | Metadata completeness — descriptions, keywords, URLs |
-| 2 | Content analysis — platform references, placeholders |
-| 3 | Binary inspection — build processing status |
-| 4 | Historical pattern matching — age rating, encryption |
+| 1 | Metadata/completeness — app access, version state, metadata limits, screenshots, build status, age rating, encryption, content rights, privacy policy URL, copyright, territory/pricing |
+| 2 | Content analysis — platform references, placeholders, URL reachability, external TestFlight coverage |
+| 3 | Reserved for future binary/API expansion |
+| 4 | Reserved for future historical pattern matching |
+
+## `release-checklist` — Manual/hybrid release gate list
+
+```bash
+storeready release-checklist
+storeready release-checklist --app-type subscription
+```
+
+Use this before final submit to review non-fully-automatable checks:
+- Review notes and tester credentials
+- Account deletion, IAP/restore, SIWA parity
+- Legal links and metadata truthfulness
+- App-type specific risk gates (subscription, social, kids, health, games, macos, ai, crypto, vpn)
+
+## `publish` — End-to-end StoreReady + ASC lane
+
+```bash
+# Safe default: dry-run release flow after all gates pass
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID>
+
+# Real submit
+storeready publish --app-id <ID> --version <X.Y.Z> --build <BUILD_ID> --confirm
+```
+
+Flow:
+1. Local StoreReady preflight gates
+2. ASC API scan gates
+3. `asc release run` execution
 
 ## `guidelines` — Apple guideline browser
 
