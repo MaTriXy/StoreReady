@@ -1,78 +1,93 @@
 ---
 name: store-preflight-compliance
-description: This skill should be used when the user asks to "run a play store and app store checkup", "review mobile app submission readiness", "check Google Play policy compliance", "check Apple App Store compliance", "audit store submission risks", or "prepare a mobile app for store submission".
-version: 0.1.0
+description: "Audit mobile app source code for Google Play and Apple App Store submission compliance. Checks AndroidManifest flags, Gradle release metadata, high-risk permissions, privacy manifests, purpose strings, hardcoded secrets, and common rejection patterns. Produces a severity-ranked findings report with fix recommendations and a READY/NOT READY verdict. Use when reviewing mobile projects for store rejection risks, submission readiness, privacy and policy compliance, or release checkups across Android and iOS."
 ---
 
 # Store Preflight Compliance
 
-Run a full pre-submission compliance checkup for mobile apps targeting Google Play and Apple App Store.
-
-## Purpose
-
-Use this skill to produce a release-readiness report without requiring any binary build/install step. Perform static repository checks directly from source files and produce store-specific findings plus manual console review items.
-
-## No-Build Workflow
-
-Do not require `go build`, `make build`, or tool installation to run this skill.
-
-If the `storeready` CLI is already available in PATH, it may be used as an optional accelerator. If it is not available, continue with source-only checks.
+Audit mobile app source for Google Play and Apple App Store compliance. Produce a severity-ranked report with fix recommendations and a READY/NOT READY verdict — no binary build required.
 
 ## Step 1: Detect Platform Scope
 
-Identify which store targets are present in the repo:
+Identify which store targets are present:
 
-- Android indicators: `AndroidManifest.xml`, `build.gradle`, `build.gradle.kts`.
-- Apple indicators: `Info.plist`, `app.json` with `expo.ios`, `PrivacyInfo.xcprivacy`, iOS project files.
+```bash
+# Android indicators
+find . -name "AndroidManifest.xml" -o -name "build.gradle" -o -name "build.gradle.kts" | head -5
 
-If only one platform is present, review that platform and still include a note that the other platform was not detected.
+# Apple indicators
+find . -name "Info.plist" -o -name "PrivacyInfo.xcprivacy" -o -name "*.xcodeproj" | head -5
+grep -rl '"expo".*"ios"' app.json 2>/dev/null
+```
+
+If only one platform is detected, review that platform and note the other was not found.
 
 ## Step 2: Run Google Play Source Checks
 
-Use the Play checklist in `references/play-checklist.md`.
+Follow the detailed checklist in `references/play-checklist.md`. At minimum:
 
-At minimum, check:
+```bash
+# Release-blocking flags
+grep -rn 'android:debuggable="true"' . --include="AndroidManifest.xml"
+grep -rn 'android:usesCleartextTraffic="true"' . --include="AndroidManifest.xml"
 
-- Manifest release flags (`debuggable`, cleartext traffic, backup behavior).
-- High-risk permissions requiring Play declarations.
-- Gradle release metadata (`applicationId`, `targetSdk`, `versionCode`).
-- Policy-sensitive areas requiring manual Play Console review (Data safety, account deletion, payments disclosures, listing accuracy).
+# High-risk permissions
+grep -rn 'android.permission.\(READ_SMS\|READ_CALL_LOG\|MANAGE_EXTERNAL_STORAGE\|QUERY_ALL_PACKAGES\)' . --include="AndroidManifest.xml"
+
+# Gradle release metadata
+grep -rn 'applicationId\|targetSdk\|versionCode' . --include="*.gradle" --include="*.gradle.kts" | head -10
+```
+
+Also flag: data safety form accuracy, account deletion requirements, billing policy compliance for digital goods, and listing accuracy — these require manual Play Console review.
+
+**Checkpoint:** Confirm at least one Android config file was found and parsed before proceeding.
 
 ## Step 3: Run Apple Source Checks
 
-Use the Apple checklist in `references/apple-checklist.md`.
+Follow the detailed checklist in `references/apple-checklist.md`. At minimum:
 
-At minimum, check:
+```bash
+# Privacy manifest
+find . -name "PrivacyInfo.xcprivacy" | head -3
 
-- Metadata completeness risks (app name, bundle identifier, privacy policy references).
-- Privacy manifest and required-reason API consistency.
-- Common rejection patterns in code and copy (placeholder text, insecure URLs, platform-reference mistakes).
-- Account and authentication policy pitfalls (for example social login patterns needing Apple Sign in support where applicable).
+# Hardcoded secrets / insecure URLs
+grep -rn 'http://' . --include="*.swift" --include="*.m" --include="*.js" --include="*.ts" | grep -v node_modules | head -10
+grep -rn 'sk_live_\|pk_live_\|AIza\|AKIA' . --include="*.swift" --include="*.js" --include="*.ts" | head -5
+
+# Placeholder content
+grep -rni 'lorem ipsum\|coming soon\|\bTBD\b' . --include="*.swift" --include="*.js" --include="*.tsx" | head -5
+```
+
+Also flag: missing privacy policy URL, social login without Sign in with Apple, account creation without deletion path, and competing platform references.
+
+**Checkpoint:** Confirm at least one Apple config file was found and parsed before proceeding.
 
 ## Step 4: Produce Report
 
-Produce output in this structure:
+Structure the output as:
 
-1. Scope detected
-2. Google Play findings
-3. Apple findings
-4. Manual console checklist items
-5. Release recommendation (`READY` / `NOT READY`)
+1. **Scope detected** — which platforms and key config files found
+2. **Google Play findings** — sorted by severity
+3. **Apple findings** — sorted by severity
+4. **Manual console checklist** — items requiring human review in Play Console / App Store Connect
+5. **Release recommendation** — `READY` (zero CRITICAL) or `NOT READY`
 
-For each finding include:
+Each finding must include:
 
-- Severity (`CRITICAL`, `WARN`, `INFO`)
-- Title
-- Evidence (file path + short snippet/observation)
-- Fix recommendation
+| Field | Example |
+|-------|---------|
+| Severity | `CRITICAL` |
+| Title | Debuggable flag enabled in release manifest |
+| Evidence | `AndroidManifest.xml:12 — android:debuggable="true"` |
+| Fix | Set `android:debuggable="false"` or remove the attribute (defaults to false) |
 
-## Optional Fast Path
+## Optional: StoreReady CLI Fast Path
 
-If `storeready` is installed, optionally run:
+If `storeready` is available in PATH, use it to accelerate automated checks:
 
 ```bash
 storeready playstore-checkup .
 storeready appstore-checkup .
 ```
 
-Still validate manual policy checklist items from reference files, because not every store requirement is automatable.
+Still validate manual policy checklist items from reference files — not every store requirement is automatable.
