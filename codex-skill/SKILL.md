@@ -1,6 +1,6 @@
 ---
 name: store-preflight-compliance
-description: Pre-submission compliance checkup for Google Play and Apple App Store apps. Use when reviewing mobile projects for store rejection risks, submission readiness, privacy/policy compliance, and release checkups across Android and iOS.
+description: "Run StoreReady compliance checks against mobile app source and configs to catch Google Play and Apple App Store rejection risks. Audits Android Manifest flags, Gradle metadata, permissions, privacy manifests, hardcoded secrets, and common rejection patterns. Use when reviewing mobile projects for store rejection risks, submission readiness, privacy and policy compliance, or release checkups across Android and iOS."
 ---
 
 # Store Preflight Compliance
@@ -50,20 +50,14 @@ Fix in order:
 2. `WARN`: high rejection risk, strongly recommended to fix.
 3. `INFO`: best-practice improvements.
 
-Common fixes:
+Store-specific fixes (apply standard code hygiene for generic issues):
 
-- Resolve Android release/policy risks (`debuggable`, cleartext traffic, sensitive permissions, target SDK, versionCode).
-- Move hardcoded secrets to environment variables.
-- Replace external payment flows for digital goods with Play Billing on Android and StoreKit/IAP on Apple.
-- Add Sign in with Apple when social login exists (Apple policy).
-- Add account deletion when account creation exists (both stores).
-- Remove references to competing platforms.
-- Replace placeholder text (`Lorem ipsum`, `TBD`, `Coming soon`).
-- Rewrite vague purpose strings with concrete app behavior.
-- Replace hardcoded IPs with hostnames.
-- Replace `http://` URLs with `https://`.
-- Remove debug logs or gate them behind development flags.
-- Add missing privacy policy URL and required store metadata.
+- **Android release flags** → Remove `android:debuggable="true"` and `android:usesCleartextTraffic="true"` from `AndroidManifest.xml`. Verify `targetSdk` meets current Play requirements.
+- **Digital goods payments** → Replace Stripe/PayPal with Play Billing (Android) and StoreKit/IAP (Apple) for in-app digital content.
+- **Sign in with Apple** → Add Apple authentication when social login (Google/Facebook) exists — Apple requires this.
+- **Account deletion** → Add "Delete Account" path when account creation exists (both stores require this).
+- **Purpose strings** → Rewrite vague permission descriptions: not "Camera needed" but "PostureGuard uses your camera to analyze sitting posture in real-time."
+- **Privacy policy** → Add URL in Play Console and App Store Connect if missing.
 
 ## Step 3: Re-Run Until READY
 
@@ -72,17 +66,4 @@ storeready playstore-checkup .
 storeready appstore-checkup .
 ```
 
-Continue until output reports READY (zero `CRITICAL` findings).
-
-## Useful Commands
-
-```bash
-storeready play-guidelines list
-storeready codescan .
-storeready privacy .
-storeready ipa /path/to/build.ipa
-storeready scan --app-id <ID>
-storeready release-checklist --app-type all
-storeready publish --app-id <ID> --version <X.Y.Z> [--build <BUILD_ID>] [--confirm]
-storeready guidelines search "privacy"
-```
+Continue until output reports READY (zero `CRITICAL` findings). Some fixes introduce new issues (e.g. adding a tracking SDK requires ATT) — re-run after each batch of changes.
